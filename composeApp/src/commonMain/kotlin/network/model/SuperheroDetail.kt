@@ -28,7 +28,7 @@ fun SuperheroDetail(hero: Hero, onDismiss: () -> Unit) {
     ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color.White,
+            color = Color(0xFF1E1E1E),
             shadowElevation = 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -45,19 +45,19 @@ fun SuperheroDetail(hero: Hero, onDismiss: () -> Unit) {
                     modifier = Modifier
                         .size(150.dp)
                         .background(
-                            brush = Brush.radialGradient(
+                            Brush.radialGradient(
                                 colors = listOf(
-                                    Color(0xFF1976D2),
-                                    Color(0xFF64B5F6)
+                                    Color(0xFF64B5F6),
+                                    Color(0xFF1976D2)
                                 )
                             ),
-                            shape = CircleShape
+                            CircleShape
                         )
                         .padding(4.dp)
                 ) {
                     KamelImage(
                         resource = asyncPainterResource(hero.image.url),
-                        contentDescription = "Image of ${hero.name}",
+                        contentDescription = "Imagen de ${hero.name}",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
@@ -72,7 +72,7 @@ fun SuperheroDetail(hero: Hero, onDismiss: () -> Unit) {
                     text = hero.name,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1976D2),
+                    color = Color(0xFF64B5F6),
                     textAlign = TextAlign.Center
                 )
                 
@@ -80,47 +80,47 @@ fun SuperheroDetail(hero: Hero, onDismiss: () -> Unit) {
                 
                 // Power stats section
                 Text(
-                    text = "Power Stats",
+                    text = "Estadísticas de Poder",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
+                    color = Color.LightGray
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 // Power stats with visual indicators
                 DetailStatBar(
-                    label = "Intelligence",
+                    label = "Inteligencia",
                     value = hero.powerstats.intelligence,
                     color = Color(0xFF4CAF50)
                 )
                 
                 DetailStatBar(
-                    label = "Strength",
+                    label = "Fuerza",
                     value = hero.powerstats.strength,
                     color = Color(0xFFF44336)
                 )
                 
                 DetailStatBar(
-                    label = "Speed",
+                    label = "Velocidad",
                     value = hero.powerstats.speed,
                     color = Color(0xFFFFEB3B)
                 )
                 
                 DetailStatBar(
-                    label = "Durability",
+                    label = "Resistencia",
                     value = hero.powerstats.durability,
                     color = Color(0xFF9C27B0)
                 )
                 
                 DetailStatBar(
-                    label = "Power",
+                    label = "Poder",
                     value = hero.powerstats.power,
                     color = Color(0xFF2196F3)
                 )
                 
                 DetailStatBar(
-                    label = "Combat",
+                    label = "Combate",
                     value = hero.powerstats.combat,
                     color = Color(0xFFFF9800)
                 )
@@ -129,9 +129,9 @@ fun SuperheroDetail(hero: Hero, onDismiss: () -> Unit) {
                 
                 // ID information
                 Text(
-                    text = "Hero ID: ${hero.id}",
+                    text = "ID del Héroe: ${hero.id}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray,
+                    color = Color.LightGray,
                     textAlign = TextAlign.Center
                 )
                 
@@ -141,12 +141,12 @@ fun SuperheroDetail(hero: Hero, onDismiss: () -> Unit) {
                 Button(
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1976D2)
+                        containerColor = Color(0xFF64B5F6)
                     ),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Close")
+                    Text("Cerrar")
                 }
             }
         }
@@ -157,17 +157,29 @@ fun SuperheroDetail(hero: Hero, onDismiss: () -> Unit) {
 private fun DetailStatBar(label: String, value: String, color: Color) {
     val numericValue = value.toIntOrNull() ?: 0
     val percentage = (numericValue / 100f).coerceIn(0f, 1f)
+    val isHighStat = numericValue >= 80
+    
+    val rowModifier = if (isHighStat) {
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .background(Color(0xFF2A2A2A), RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    }
     
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
+        modifier = rowModifier
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.DarkGray,
+            color = if (isHighStat) Color.White else Color.LightGray,
+            fontWeight = if (isHighStat) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.width(100.dp)
         )
         
@@ -177,14 +189,29 @@ private fun DetailStatBar(label: String, value: String, color: Color) {
             modifier = Modifier
                 .weight(1f)
                 .height(10.dp)
-                .background(Color.LightGray, RoundedCornerShape(5.dp))
+                .background(Color(0xFF333333), RoundedCornerShape(5.dp))
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(percentage)
-                    .background(color, RoundedCornerShape(5.dp))
-            )
+            // Usar diferentes enfoques para el fondo según si es una estadística alta o no
+            if (isHighStat) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(percentage)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(color, Color.White)
+                            ),
+                            RoundedCornerShape(5.dp)
+                        )
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(percentage)
+                        .background(color, RoundedCornerShape(5.dp))
+                )
+            }
         }
         
         Spacer(modifier = Modifier.width(8.dp))
@@ -192,8 +219,8 @@ private fun DetailStatBar(label: String, value: String, color: Color) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.DarkGray,
+            fontWeight = if (isHighStat) FontWeight.ExtraBold else FontWeight.Bold,
+            color = if (isHighStat) color else Color.LightGray,
             modifier = Modifier.width(30.dp)
         )
     }

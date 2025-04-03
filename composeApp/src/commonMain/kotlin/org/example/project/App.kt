@@ -37,10 +37,12 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun App() {
     MaterialTheme(
         colorScheme = darkColorScheme().copy(
-            primary = Color(0xFF1976D2),
+            primary = Color(0xFF64B5F6),
             onPrimary = Color.White,
-            surface = Color(0xFFF5F5F5),
-            background = Color(0xFFF5F5F5)
+            surface = Color(0xFF121212),
+            background = Color(0xFF121212),
+            onBackground = Color(0xFFE0E0E0),
+            onSurface = Color(0xFFE0E0E0)
         )
     ) {
         var superheroName by remember { mutableStateOf("") }
@@ -60,7 +62,7 @@ fun App() {
             ) {
                 // App Header
                 Text(
-                    text = "Superhero Explorer",
+                    text = "Explorador de Superhéroes",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -72,7 +74,7 @@ fun App() {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -82,47 +84,43 @@ fun App() {
                             value = superheroName,
                             onValueChange = { superheroName = it },
                             modifier = Modifier.weight(1f),
-                            placeholder = { Text("Search heroes...") },
+                            placeholder = { Text("Buscar héroes...") },
                             singleLine = true,
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                unfocusedIndicatorColor = Color.LightGray,
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
+                                unfocusedIndicatorColor = Color.Gray,
+                                focusedContainerColor = Color(0xFF1E1E1E),
+                                unfocusedContainerColor = Color(0xFF1E1E1E),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
                             )
                         )
                         
                         Spacer(modifier = Modifier.width(8.dp))
                         
-                        Button(
-                            onClick = { 
+                        IconButton(
+                            onClick = {
                                 errorMessage = null
                                 isLoading = true
                                 hasSearched = true
                                 getSuperheroList(
                                     superheroName = superheroName,
-                                    onSuccessResponse = { 
-                                        superheroList = it
+                                    onSuccessResponse = { heroes ->
+                                        superheroList = heroes
                                         isLoading = false
                                     },
-                                    onError = { 
-                                        errorMessage = it
+                                    onError = { error ->
+                                        errorMessage = error
                                         isLoading = false
                                     }
                                 )
-                            },
-                            enabled = superheroName.isNotBlank() && !isLoading,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            ),
-                            shape = RoundedCornerShape(8.dp)
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = "Search"
+                                contentDescription = "Buscar",
+                                tint = MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Search")
                         }
                     }
                 }
@@ -151,11 +149,12 @@ fun App() {
                     errorMessage?.let {
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF3A0000))
                         ) {
                             Text(
-                                text = it,
-                                color = Color(0xFFB71C1C),
+                                text = it.replace("No heroes found with that name", "No se encontraron héroes con ese nombre")
+                                    .replace("Error loading heroes:", "Error al cargar héroes:"),
+                                color = Color(0xFFFF8A80),
                                 modifier = Modifier.padding(16.dp),
                                 textAlign = TextAlign.Center
                             )
@@ -170,7 +169,7 @@ fun App() {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No heroes found. Try a different search term.",
+                            text = "No se encontraron héroes. Intenta con un término diferente.",
                             color = Color.Gray,
                             textAlign = TextAlign.Center
                         )
@@ -180,9 +179,9 @@ fun App() {
                 // Hero list
                 if (superheroList.isNotEmpty()) {
                     Text(
-                        text = "Found ${superheroList.size} heroes",
+                        text = "Se encontraron ${superheroList.size} héroes",
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray,
+                        color = Color.LightGray,
                         modifier = Modifier.padding(vertical = 8.dp).align(Alignment.Start)
                     )
                     
@@ -220,11 +219,11 @@ fun getSuperheroList(
             if (response.ok == "success" && response.results.isNotEmpty()) {
                 onSuccessResponse(response.results)
             } else {
-                onError("No heroes found with that name")
+                onError("No se encontraron héroes con ese nombre")
             }
         } catch (e: Exception){
             println("Error al obtener datos: ${e.message}")
-            onError("Error loading heroes: ${e.message}")
+            onError("Error al cargar héroes: ${e.message}")
         }
     }
 }

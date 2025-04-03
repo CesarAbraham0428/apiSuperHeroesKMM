@@ -23,10 +23,23 @@ import network.model.Hero
 
 @Composable
 fun SuperheroCard(hero: Hero, onClick: () -> Unit) {
+    // Calcular el poder total del héroe
+    val totalPower = (hero.powerstats.intelligence.toIntOrNull() ?: 0) +
+                     (hero.powerstats.strength.toIntOrNull() ?: 0) +
+                     (hero.powerstats.speed.toIntOrNull() ?: 0) +
+                     (hero.powerstats.durability.toIntOrNull() ?: 0) +
+                     (hero.powerstats.power.toIntOrNull() ?: 0) +
+                     (hero.powerstats.combat.toIntOrNull() ?: 0)
+    
+    // Determinar si es un héroe poderoso (más de 400 puntos totales)
+    val isPowerful = totalPower > 400
+    
     Card(
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isPowerful) 8.dp else 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isPowerful) Color(0xFF252525) else Color(0xFF1E1E1E)
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
@@ -40,11 +53,18 @@ fun SuperheroCard(hero: Hero, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(100.dp)
                     .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF1976D2),
-                                Color(0xFF64B5F6)
-                            )
+                        Brush.radialGradient(
+                            colors = if (isPowerful) {
+                                listOf(
+                                    Color(0xFFFFD700), // Dorado para héroes poderosos
+                                    Color(0xFFFFA500)
+                                )
+                            } else {
+                                listOf(
+                                    Color(0xFF64B5F6),
+                                    Color(0xFF1976D2)
+                                )
+                            }
                         ),
                         shape = CircleShape
                     )
@@ -52,7 +72,7 @@ fun SuperheroCard(hero: Hero, onClick: () -> Unit) {
             ) {
                 KamelImage(
                     resource = asyncPainterResource(hero.image.url),
-                    contentDescription = "Image of ${hero.name}",
+                    contentDescription = "Imagen de ${hero.name}",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
@@ -70,28 +90,37 @@ fun SuperheroCard(hero: Hero, onClick: () -> Unit) {
                     text = hero.name,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1976D2),
+                    color = if (isPowerful) Color(0xFFFFD700) else Color(0xFF64B5F6),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                
+                if (isPowerful) {
+                    Text(
+                        text = "⭐ Héroe Destacado",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFFFD700),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
                 // Power stats with visual indicators
                 PowerStatBar(
-                    label = "Intelligence",
+                    label = "Inteligencia",
                     value = hero.powerstats.intelligence,
                     color = Color(0xFF4CAF50)
                 )
                 
                 PowerStatBar(
-                    label = "Strength",
+                    label = "Fuerza",
                     value = hero.powerstats.strength,
                     color = Color(0xFFF44336)
                 )
                 
                 PowerStatBar(
-                    label = "Speed",
+                    label = "Velocidad",
                     value = hero.powerstats.speed,
                     color = Color(0xFFFFEB3B)
                 )
@@ -104,6 +133,7 @@ fun SuperheroCard(hero: Hero, onClick: () -> Unit) {
 private fun PowerStatBar(label: String, value: String, color: Color) {
     val numericValue = value.toIntOrNull() ?: 0
     val percentage = (numericValue / 100f).coerceIn(0f, 1f)
+    val isHighStat = numericValue >= 80
     
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -112,7 +142,8 @@ private fun PowerStatBar(label: String, value: String, color: Color) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.DarkGray,
+            color = if (isHighStat) Color.White else Color.LightGray,
+            fontWeight = if (isHighStat) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.width(90.dp)
         )
         
@@ -122,14 +153,29 @@ private fun PowerStatBar(label: String, value: String, color: Color) {
             modifier = Modifier
                 .weight(1f)
                 .height(8.dp)
-                .background(Color.LightGray, RoundedCornerShape(4.dp))
+                .background(Color(0xFF333333), RoundedCornerShape(4.dp))
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(percentage)
-                    .background(color, RoundedCornerShape(4.dp))
-            )
+            // Usar diferentes enfoques para el fondo según si es una estadística alta o no
+            if (isHighStat) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(percentage)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(color, Color.White)
+                            ),
+                            RoundedCornerShape(4.dp)
+                        )
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(percentage)
+                        .background(color, RoundedCornerShape(4.dp))
+                )
+            }
         }
         
         Spacer(modifier = Modifier.width(8.dp))
@@ -137,8 +183,8 @@ private fun PowerStatBar(label: String, value: String, color: Color) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.DarkGray
+            fontWeight = if (isHighStat) FontWeight.ExtraBold else FontWeight.Bold,
+            color = if (isHighStat) color else Color.LightGray
         )
     }
 }
